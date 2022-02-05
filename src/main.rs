@@ -34,7 +34,10 @@ fn main() {
       if !entry.path().is_file() {
         for sub_entry in fs::read_dir(entry.path()).expect("Unable to list") {
           match sub_entry {
-            Ok(sub_entry) => println!("{}", sub_entry.path().display()),
+            Ok(sub_entry) =>  {
+              println!("{}", sub_entry.path().display());
+              check_path_for_images(sub_entry.path());
+            },
             Err(..) => println!("unable to get sub entry"),
           }
         }

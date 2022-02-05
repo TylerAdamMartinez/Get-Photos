@@ -1,5 +1,7 @@
 use std::fs;
+use std::env;
 use std::path::Path;
+use std::path::PathBuf;
 use std::io;
 
 fn main() {
@@ -10,9 +12,14 @@ fn main() {
       .expect("Failed to read from buffer");
 
     let folder_name: String = buffer.trim().to_string();
-    let folder_path: String = String::from("pwd here..");
+    let mut folder_path: PathBuf = PathBuf::new();
 
-    println!("Made /{} folder in {}", folder_name, folder_path);
+    match env::current_dir() {
+       Ok(dir) => folder_path = dir,
+       Err(..) => println!("Failed to read current directory"),
+    }
+
+    println!("Made /{} folder in {}", folder_name, folder_path.to_str().unwrap());
     let image_types: Vec<String> = vec![
       String::from("*.jpg"),
       String::from("*.jpeg"),
@@ -33,6 +40,15 @@ fn main() {
     for entry in fs::read_dir(path).expect("Unable to list") {
         let entry = entry.expect("unable to get entry");
         println!("{}", entry.path().display());
+        println!("{}", entry.path().is_file());
+        if !entry.path().is_file() {
+          for sub_entry in fs::read_dir(entry.path()).expect("Unable to list") {
+            match sub_entry {
+              Ok(sub_entry) => println!("{}", sub_entry.path().display()),
+              Err(..) => println!("unable to get sub entry"),
+            }
+          }
+        }
     }
 }
 

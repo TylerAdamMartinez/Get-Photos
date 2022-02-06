@@ -4,6 +4,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::io;
 use regex::RegexSet;
+use regex::Regex;
 
 fn main() {
   println!("What's a good name for the photo album: ");
@@ -11,8 +12,9 @@ fn main() {
   io::stdin()
     .read_line(&mut buffer)
     .expect("Failed to read from buffer");
-
-  let folder_name: String = buffer.trim().to_string();
+  
+  let whitespace: Regex = Regex::new(r"\s+").unwrap();
+  let folder_name: String = whitespace.replace_all(&buffer.as_str(), "_").trim().to_string();
   let mut folder_path: PathBuf = PathBuf::new();
 
   match env::current_dir() {

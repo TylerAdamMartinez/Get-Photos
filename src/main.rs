@@ -1,50 +1,20 @@
 use std::fs;
 use std::env;
-use std::path::Path;
-use std::path::PathBuf;
 use std::io;
 use regex::RegexSet;
 use regex::Regex;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
   
 
 fn main() {
   let folder_name: String = get_folder_name();
   make_folder_in_current_dir(folder_name);
   
-  println!("Finding images files...");
-  /* 
-  let mut ancestors = Path::new("../foo/bar").ancestors();
-  assert_eq!(ancestors.next(), Some(Path::new("../foo/bar")));
-  assert_eq!(ancestors.next(), Some(Path::new("../foo")));
-  assert_eq!(ancestors.next(), Some(Path::new("..")));
-  assert_eq!(ancestors.next(), Some(Path::new("")));
-  assert_eq!(ancestors.next(), None);
-  */
-
-  let path = Path::new(".");
-  for entry in fs::read_dir(path).expect("Unable to list") {
-      let entry = entry.expect("unable to get entry");
-      println!("{}", entry.path().display());
-
-      check_path_for_images(entry.path());
-
-      if !entry.path().is_file() {
-        for sub_entry in fs::read_dir(entry.path()).expect("Unable to list") {
-          match sub_entry {
-            Ok(sub_entry) =>  {
-              println!("{}", sub_entry.path().display());
-              check_path_for_images(sub_entry.path());
-            },
-            Err(..) => println!("unable to get sub entry"),
-          }
-        }
-      }
-  }
+  traverse_directories();
 }
 
 
-fn check_path_for_images(path: PathBuf) {
+fn check_path_for_images(path: &str) {
   let image_types: RegexSet = RegexSet::new(&[
     r".+\.jpg",
     r".+\.jpeg",
@@ -58,16 +28,10 @@ fn check_path_for_images(path: PathBuf) {
     r".+\.raw",
   ]).unwrap();
 
-  match path.to_str() {
-    None => println!("Image not found"),
-    Some(path_str) => {
-      let jpg_images: Vec<_> = image_types.matches(path_str).into_iter().collect();
-      for jpg_image in jpg_images {
-        println!("This is an image {}", jpg_image);
-      }
-    },
+  let jpg_images: Vec<_> = image_types.matches(path).into_iter().collect();
+  for jpg_image in jpg_images {
+    println!("This is an image {}", jpg_image);
   }
-
 }
 
 fn get_folder_name() -> String {
@@ -95,6 +59,18 @@ fn make_folder_in_current_dir(folder_name: String) {
 
   fs::create_dir(folder_name)
     .expect("Failed to create folder in current directory");
+}
+
+fn traverse_directories() {
+  for entry in WalkDir::new(".")
+    .into_iter()
+    .filter_map(|e| e.ok()) {
+      match entry.path().to_str() {
+        Some(entry_path_str) => check_path_for_images(entry_path_str),
+        None => println!("Failed to convert path to string format"),
+      }
+      println!("{}", entry.path().display());
+  }
 }
 // check photos with magic bites
 // copy paths

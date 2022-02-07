@@ -26,6 +26,7 @@ fn check_path_for_images(path: &str) {
     r".+\.eps",
     r".+\.ai",
     r".+\.raw",
+    r".+\.svg",
   ]).unwrap();
 
   let jpg_images: Vec<_> = image_types.matches(path).into_iter().collect();

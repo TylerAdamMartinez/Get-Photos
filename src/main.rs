@@ -91,7 +91,8 @@ fn make_folder_in_current_dir(folder_name: String) {
     Err(..) => println!("Failed to read current directory"),
   }
 
-  fs::create_dir(folder_name);
+  fs::create_dir(folder_name)
+    .expect("Failed to create folder in current directory");
 }
 // check photos with magic bites
 // copy paths

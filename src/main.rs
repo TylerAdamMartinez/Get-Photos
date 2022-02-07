@@ -5,6 +5,8 @@ use std::path::PathBuf;
 use std::io;
 use regex::RegexSet;
 use regex::Regex;
+use walkdir::{DirEntry, WalkDir};
+  
 
 fn main() {
   let folder_name: String = get_folder_name();

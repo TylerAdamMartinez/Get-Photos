@@ -7,25 +7,19 @@ use regex::RegexSet;
 use regex::Regex;
 
 fn main() {
-  println!("What's a good name for the photo album: ");
-  let mut buffer: String = String::new();
-  io::stdin()
-    .read_line(&mut buffer)
-    .expect("Failed to read from buffer");
+  let folder_name: String = get_folder_name();
+  make_folder_in_current_dir(folder_name);
   
-  let whitespace: Regex = Regex::new(r"\s+").unwrap();
-  let folder_name: String = whitespace.replace_all(&buffer.as_str(), "_").trim().to_string();
-  let mut folder_path: PathBuf = PathBuf::new();
-
-  match env::current_dir() {
-      Ok(dir) => folder_path = dir,
-      Err(..) => println!("Failed to read current directory"),
-  }
-
-  println!("Made /{} folder in {}", folder_name, folder_path.to_str().unwrap());
-
-
   println!("Finding images files...");
+  /* 
+  let mut ancestors = Path::new("../foo/bar").ancestors();
+  assert_eq!(ancestors.next(), Some(Path::new("../foo/bar")));
+  assert_eq!(ancestors.next(), Some(Path::new("../foo")));
+  assert_eq!(ancestors.next(), Some(Path::new("..")));
+  assert_eq!(ancestors.next(), Some(Path::new("")));
+  assert_eq!(ancestors.next(), None);
+  */
+
   let path = Path::new(".");
   for entry in fs::read_dir(path).expect("Unable to list") {
       let entry = entry.expect("unable to get entry");
@@ -72,6 +66,32 @@ fn check_path_for_images(path: PathBuf) {
     },
   }
 
+}
+
+fn get_folder_name() -> String {
+  println!("What's a good name for the photo album: ");
+  let mut buffer: String = String::new();
+  io::stdin()
+    .read_line(&mut buffer)
+    .expect("Failed to read from buffer");
+  
+  let whitespace: Regex = Regex::new(r"\s+").unwrap();
+  let folder_name: String = whitespace.replace_all(&buffer.as_str(), "_").trim().to_string();
+  return folder_name;
+}
+   
+fn make_folder_in_current_dir(folder_name: String) {
+  match env::current_dir() {
+    Ok(folder_path) => {
+      match folder_path.to_str()  {
+        Some(folder_path_str) =>  println!("Made /{} folder in {}", folder_name, folder_path_str),
+        None => println!("Failed to display folder path"),
+      }
+    },
+    Err(..) => println!("Failed to read current directory"),
+  }
+
+  fs::create_dir(folder_name);
 }
 // check photos with magic bites
 // copy paths

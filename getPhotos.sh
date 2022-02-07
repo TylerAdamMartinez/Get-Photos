@@ -17,7 +17,7 @@ IMG_TYPE[6]="*.pdf"
 IMG_TYPE[7]="*.eps"
 IMG_TYPE[8]="*.ai"
 IMG_TYPE[9]="*.raw"
-
+IMG_TYPE[10]="*.svg"
 echo "Finding images files..."
 
 for i in "${IMG_TYPE[@]}"

@@ -33,6 +33,16 @@ fn check_path_for_images(path: &str, folder_name: &String) {
     println!("This is an image {}", jpg_image);
     println!("This is the image path: {}", path);
     println!("This image should be copied to {}", folder_name);
+    
+    let mut path_without_dot = path.chars();
+    path_without_dot.next();
+    let copy_image_path = folder_name.clone() + path_without_dot.as_str();
+    println!("copy path is {}", copy_image_path);
+    
+    match fs::copy(path, copy_image_path) {
+      Ok(i) => println!("copied {} file", i),
+      Err(..) => println!("Failed to copy image"),
+    }
   }
 }
 

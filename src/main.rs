@@ -1,8 +1,5 @@
-use std::fs;
-use std::env;
-use std::io;
-use regex::RegexSet;
-use regex::Regex;
+use std::{io, fs, env};
+use regex::{Regex, RegexSet};
 use walkdir::WalkDir;
 
 fn main() {
@@ -80,6 +77,4 @@ fn traverse_directories(folder_name: &String) {
       }
   }
 }
-// check photos with magic bites
-// copy paths
-// copy all checked photos to directory 
+//TODO: check photos with magic bites

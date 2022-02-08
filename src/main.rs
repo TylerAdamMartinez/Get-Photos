@@ -8,13 +8,12 @@ use walkdir::WalkDir;
 
 fn main() {
   let folder_name: String = get_folder_name();
-  make_folder_in_current_dir(folder_name);
-  
-  traverse_directories();
+  make_folder_in_current_dir(&folder_name);
+  traverse_directories(&folder_name);
 }
 
 
-fn check_path_for_images(path: &str) {
+fn check_path_for_images(path: &str, folder_name: &String) {
   let image_types: RegexSet = RegexSet::new(&[
     r".+\.jpg",
     r".+\.jpeg",
@@ -32,6 +31,8 @@ fn check_path_for_images(path: &str) {
   let jpg_images: Vec<_> = image_types.matches(path).into_iter().collect();
   for jpg_image in jpg_images {
     println!("This is an image {}", jpg_image);
+    println!("This is the image path: {}", path);
+    println!("This image should be copied to {}", folder_name);
   }
 }
 
@@ -47,7 +48,7 @@ fn get_folder_name() -> String {
   return folder_name;
 }
    
-fn make_folder_in_current_dir(folder_name: String) {
+fn make_folder_in_current_dir(folder_name: &String) {
   match env::current_dir() {
     Ok(folder_path) => {
       match folder_path.to_str()  {
@@ -62,12 +63,12 @@ fn make_folder_in_current_dir(folder_name: String) {
     .expect("Failed to create folder in current directory");
 }
 
-fn traverse_directories() {
+fn traverse_directories(folder_name: &String) {
   for entry in WalkDir::new(".")
     .into_iter()
     .filter_map(|e| e.ok()) {
       match entry.path().to_str() {
-        Some(entry_path_str) => check_path_for_images(entry_path_str),
+        Some(entry_path_str) => check_path_for_images(entry_path_str, folder_name),
         None => println!("Failed to convert path to string format"),
       }
       println!("{}", entry.path().display());

@@ -20,7 +20,7 @@ fn get_folder_name() -> String {
   
   let whitespace: Regex = Regex::new(r"\s+").unwrap();
   let folder_name: String = whitespace.replace_all(&buffer.as_str(), "_").trim().to_string();
-  return folder_name;
+  folder_name
 }
    
 fn make_folder_in_current_dir(folder_name: &String) {

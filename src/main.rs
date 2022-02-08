@@ -4,46 +4,11 @@ use std::io;
 use regex::RegexSet;
 use regex::Regex;
 use walkdir::WalkDir;
-  
 
 fn main() {
   let folder_name: String = get_folder_name();
   make_folder_in_current_dir(&folder_name);
   traverse_directories(&folder_name);
-}
-
-
-fn check_path_for_images(path: &str, folder_name: &String) {
-  let image_types: RegexSet = RegexSet::new(&[
-    r".+\.jpg",
-    r".+\.jpeg",
-    r".+\.png",
-    r".+\.gif",
-    r".+\.tiff",
-    r".+\.psd",
-    r".+\.pdf",
-    r".+\.eps",
-    r".+\.ai",
-    r".+\.raw",
-    r".+\.svg",
-  ]).unwrap();
-
-  let jpg_images: Vec<_> = image_types.matches(path).into_iter().collect();
-  for jpg_image in jpg_images {
-    println!("This is an image {}", jpg_image);
-    println!("This is the image path: {}", path);
-    println!("This image should be copied to {}", folder_name);
-    
-    let mut path_without_dot = path.chars();
-    path_without_dot.next();
-    let copy_image_path = folder_name.clone() + path_without_dot.as_str();
-    println!("copy path is {}", copy_image_path);
-    
-    match fs::copy(path, copy_image_path) {
-      Ok(i) => println!("copied {} file", i),
-      Err(..) => println!("Failed to copy image"),
-    }
-  }
 }
 
 fn get_folder_name() -> String {
@@ -73,7 +38,39 @@ fn make_folder_in_current_dir(folder_name: &String) {
     .expect("Failed to create folder in current directory");
 }
 
+fn remove_dot(file: &str) -> &str {
+  let mut new_file_name = file.chars();
+  new_file_name.next();
+  &new_file_name.as_str()
+}
+
+fn check_path_for_images(path: &str, folder_name: &String) {
+  let image_types: RegexSet = RegexSet::new(&[
+    r".+\.jpg",
+    r".+\.jpeg",
+    r".+\.png",
+    r".+\.gif",
+    r".+\.tiff",
+    r".+\.psd",
+    r".+\.pdf",
+    r".+\.eps",
+    r".+\.ai",
+    r".+\.raw",
+    r".+\.svg",
+  ]).unwrap();
+
+  if image_types.is_match(path) {
+    let copy_image_path = folder_name.clone() + remove_dot(path);
+    
+    match fs::copy(path, copy_image_path) {
+      Ok(..) => println!("copied {} file", path),
+      Err(..) => println!("Failed to copy image"),
+    }
+  }
+}
+
 fn traverse_directories(folder_name: &String) {
+  println!("Traversing directory and all subdirectories for images...");
   for entry in WalkDir::new(".")
     .into_iter()
     .filter_map(|e| e.ok()) {
@@ -81,7 +78,6 @@ fn traverse_directories(folder_name: &String) {
         Some(entry_path_str) => check_path_for_images(entry_path_str, folder_name),
         None => println!("Failed to convert path to string format"),
       }
-      println!("{}", entry.path().display());
   }
 }
 // check photos with magic bites

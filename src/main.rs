@@ -1,4 +1,5 @@
 use std::{io, fs, env};
+use std::path::Path;
 use regex::{Regex, RegexSet};
 use walkdir::WalkDir;
 
@@ -41,7 +42,7 @@ fn remove_dot(file: &str) -> &str {
   &new_file_name.as_str()
 }
 
-fn check_path_for_images(path: &str, folder_name: &String) {
+fn check_path_for_images(file_name: &str, folder_name: &String) {
   let image_types: RegexSet = RegexSet::new(&[
     r".+\.jpg",
     r".+\.jpeg",
@@ -56,12 +57,29 @@ fn check_path_for_images(path: &str, folder_name: &String) {
     r".+\.svg",
   ]).unwrap();
 
-  if image_types.is_match(path) {
-    let copy_image_path = folder_name.clone() + remove_dot(path);
+  if image_types.is_match(file_name) {
     
-    match fs::copy(path, copy_image_path) {
-      Ok(..) => println!("copied {} file", path),
-      Err(..) => println!("Failed to copy image"),
+    let new_path = Path::new(".");
+    let new_path_buf = new_path.join(file_name);
+    
+    let new_path_str: &str;
+    match new_path_buf.to_str() {
+      Some(s) => new_path_str = s,
+      None =>  {
+        println!("Failed to Create Copy Path");
+        new_path_str = "FAILED PATH";
+      }
+    }
+    
+    let copy_image_path = folder_name.clone() + remove_dot(new_path_str);
+    
+    match fs::copy(file_name, &copy_image_path) {
+      Ok(..) => println!("copied {} file", file_name),
+      Err(..) => {
+        println!("Failed to copy image");
+        println!("Image path {}", file_name);
+        println!("Image copy path {}", &copy_image_path);
+      }
     }
   }
 }
@@ -71,8 +89,13 @@ fn traverse_directories(folder_name: &String) {
   for entry in WalkDir::new(".")
     .into_iter()
     .filter_map(|e| e.ok()) {
-      match entry.path().to_str() {
-        Some(entry_path_str) => check_path_for_images(entry_path_str, folder_name),
+      match entry.path().file_name() {
+        Some(entry_path_file_name) => {
+          match entry_path_file_name.to_str() {
+            Some(entry_path_file_name_str) => check_path_for_images(entry_path_file_name_str, folder_name),
+            None => println!("Failed to convert file name to string format"),
+          }
+        },
         None => println!("Failed to convert path to string format"),
       }
   }

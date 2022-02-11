@@ -1,4 +1,5 @@
 use std::{io, fs, env};
+use fs_extra::file::{CopyOptions, move_file};
 use std::path::Path;
 use regex::{Regex, RegexSet};
 use walkdir::WalkDir;
@@ -58,7 +59,6 @@ fn check_path_for_images(file_name: &str, folder_name: &String) {
   ]).unwrap();
 
   if image_types.is_match(file_name) {
-    
     let new_path = Path::new(".");
     let new_path_buf = new_path.join(file_name);
     
@@ -66,18 +66,32 @@ fn check_path_for_images(file_name: &str, folder_name: &String) {
     match new_path_buf.to_str() {
       Some(s) => new_path_str = s,
       None =>  {
-        println!("Failed to Create Copy Path");
+        println!("Failed to new image path");
         new_path_str = "FAILED PATH";
       }
     }
+    let image_path = new_path_str;
+    let mut copy_image_path = folder_name.clone() + remove_dot(image_path);
     
-    let copy_image_path = folder_name.clone() + remove_dot(new_path_str);
+    let new_path = Path::new(".");
+    let new_path_buf = new_path.join(copy_image_path);
     
-    match fs::copy(file_name, &copy_image_path) {
-      Ok(..) => println!("copied {} file", file_name),
+    let new_path_str: &str;
+    match new_path_buf.to_str() {
+      Some(s) => new_path_str = s,
+      None =>  {
+        println!("Failed to new copy image path");
+        new_path_str = "FAILED PATH";
+      }
+    }
+    copy_image_path = new_path_str.to_string();
+
+    let options = CopyOptions::new(); 
+    match move_file(image_path, &copy_image_path, &options) {
+      Ok(..) => println!("copied {} file", image_path),
       Err(..) => {
         println!("Failed to copy image");
-        println!("Image path {}", file_name);
+        println!("Image path {}", image_path);
         println!("Image copy path {}", &copy_image_path);
       }
     }
